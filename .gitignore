@@ -1,0 +1,15 @@
+__pycache__/
+.venv/
+*.pyc
+.env
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+
+# Alles unter data/ ist abgeleitet: Zonen, Fundstellen, Termine. `urbanify survey` baut es neu.
+data/*
+!data/.gitkeep
+
+# Der Katalog ist die eigene Quellenliste, nicht Teil des Werkzeugs.
+# Vorlage: src/urbanify/catalog.example.yaml
+src/urbanify/catalog.yaml

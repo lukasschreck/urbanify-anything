@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Urbanify Anything</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css"
+      integrity="sha384-gNYNsUmuZqDYiT3gbirWTV5K7rt71RoveS/yXAaU09d4ZUmeDVTD3XoqB6uJAIFR" crossorigin="anonymous">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<aside>
+  <header>
+    <h1>Urbanify <em>Anything</em></h1>
+    <p class="lede">Eine Stadt, die Stunde drumherum, und wer dort Termine führt.</p>
+    <form id="search">
+      <input id="query" placeholder="Stadt eingeben, z. B. Leipzig" autocomplete="off">
+      <button>Erheben</button>
+    </form>
+    <div id="places"></div>
+    <p id="progress" hidden></p>
+  </header>
+
+  <section id="summary" hidden>
+    <div class="tiles" id="tiles"></div>
+    <p class="found" id="found"></p>
+  </section>
+
+  <nav id="tabs" hidden>
+    <button data-tab="sources" class="on">Quellen</button>
+    <button data-tab="categories">Kategorien</button>
+    <button data-tab="overlap">Überschneidung</button>
+    <button data-tab="closed">Nur für Menschen</button>
+  </nav>
+  <div id="panel"></div>
+</aside>
+
+<main>
+  <div id="map"></div>
+  <div id="legend">
+    <label><input type="checkbox" id="show-zones" checked> Zonen
+      <span class="zones"><i class="z1"></i><i class="z2"></i><i class="z3"></i></span> 15 / 30 / 60 min</label>
+    <label><input type="checkbox" id="show-ebike"> E-Bike-Stunde <span class="dash"></span></label>
+    <label><input type="checkbox" id="show-events" checked> Termine <span class="dot ev"></span></label>
+    <label><input type="checkbox" id="show-sites"> Websites
+      <span class="dot feed"></span>Feed <span class="dot html"></span>nur HTML <span class="dot none"></span>nichts</label>
+    <p id="filter" hidden></p>
+  </div>
+</main>
+
+<script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"
+        integrity="sha384-81ppUWZZO+pveTPk4qU9cZuScEFULHfuOMHVJHFZ7xVBlWQTG1zsPrVIMGAl1WMb" crossorigin="anonymous"></script>
+<script src="app.js"></script>
+</body>
+</html>

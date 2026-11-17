@@ -1,0 +1,41 @@
+# Der Katalog: überregionale Sammelstellen, die man nicht über die Website
+# eines einzelnen Hauses findet — ein Landesportal, ein offenes Register, ein
+# Netzwerk selbstorganisierter Räume.
+#
+# Diese Datei ist eine Vorlage. Kopieren, eigene Einträge eintragen:
+#
+#     cp src/urbanify/catalog.example.yaml src/urbanify/catalog.yaml
+#
+# `catalog.yaml` ist nicht versioniert. Ohne sie läuft eine Erhebung
+# vollständig, nur eben allein mit dem, was OpenStreetMap über eine Stadt
+# weiß. Liegt der Katalog woanders: $URBANIFY_CATALOG.
+#
+# Jeder Eintrag sagt selbst, wo er zuständig ist. Ob er für eine Stadt gilt,
+# entscheidet der Schnitt seiner Fläche mit der gemessenen Stunde, nicht ein
+# Vergleich von Städtenamen — ein Landesportal gilt auch für den Nachbarort
+# jenseits der Grenze, wenn dessen Stunde ins Land hineinreicht.
+#
+#   slug      Name in der Datenbank, einmalig
+#   name      wie es im Bericht steht
+#   kind      der Adapter in catalog.py: `radar`, `kulturdaten`,
+#             `simplesearch` — oder `none`
+#   endpoint  die Basis-URL, die der Adapter abfragt
+#   coverage  `world`, oder [minlon, minlat, maxlon, maxlat]
+#   license   wie die Daten weiterverwendet werden dürfen. Keine Kür: die
+#             Erhebung zeigt, *dass* dort Termine maschinenlesbar stehen,
+#             nicht, dass man sie weiterverbreiten darf.
+#   note      frei
+#   city      Ortsname, wo die Quelle selbst keinen je Termin nennt
+#             (`simplesearch` immer, `kulturdaten` als Rückfall)
+#
+# `kind: none` ist ausdrücklich erlaubt und keine Verlegenheit: der Eintrag
+# steht dann im Bericht als „zuständig, aber noch nicht angeschlossen“,
+# statt verschwiegen zu werden. So wird aus einer Lücke eine Arbeitsliste.
+
+- slug: beispiel-landesportal
+  name: Beispiel — Landesportal eines erfundenen Landes
+  kind: none
+  endpoint: https://example.org/api/v1
+  coverage: [7.0, 47.0, 11.0, 50.0]
+  license: unbekannt, vor Gebrauch prüfen
+  note: Vorlage. Ein eigener Adapter gehört in catalog.py und in ADAPTERS.

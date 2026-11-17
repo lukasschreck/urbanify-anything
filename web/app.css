@@ -1,0 +1,162 @@
+/* Die Oberfläche bleibt so neutral wie die Karte. Alles Farbige gehört den
+ * Zonen und den Terminen — dieselben Töne wie in der Schwesteranwendung:
+ * kühl und leise für die gemessene Entfernung, Terracotta für das, was
+ * daraus herausragen muss. */
+
+:root {
+  --bg: #f4f4f0;
+  --bg-raised: #fbfbf8;
+  --ink-strong: #1f1f1d;
+  --ink-soft: #6e6e68;
+  --line: #d8d8d2;
+  --line-soft: #e6e6e0;
+  --accent: #b4653a;
+  --accent-soft: #b4653a22;
+  --zone1: #2e6f6b;
+  --zone2: #4e7f8c;
+  --zone3: #6b8a9b;
+  --bad: #9c3328;
+  --bad-soft: #9c332818;
+  --radius: 7px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171716;
+    --bg-raised: #201f1e;
+    --ink-strong: #f0f0ec;
+    --ink-soft: #9c9c94;
+    --line: #34332f;
+    --line-soft: #2a2927;
+    --accent: #d07c4c;
+    --accent-soft: #d07c4c26;
+    --zone1: #5fb0aa;
+    --zone2: #7aa8bb;
+    --zone3: #93b2c2;
+    --bad: #d98477;
+    --bad-soft: #d9847722;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171716;
+  --bg-raised: #201f1e;
+  --ink-strong: #f0f0ec;
+  --ink-soft: #9c9c94;
+  --line: #34332f;
+  --line-soft: #2a2927;
+  --accent: #d07c4c;
+  --accent-soft: #d07c4c26;
+  --zone1: #5fb0aa;
+  --zone2: #7aa8bb;
+  --zone3: #93b2c2;
+  --bad: #d98477;
+  --bad-soft: #d9847722;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body {
+  display: grid; grid-template-columns: minmax(360px, 460px) 1fr;
+  font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink-strong); background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+aside { display: flex; flex-direction: column; height: 100vh; border-right: 1px solid var(--line); overflow: hidden; }
+header { padding: 20px 20px 12px; }
+h1 { font: 600 22px/1.1 ui-serif, Georgia, serif; margin: 0 0 4px; letter-spacing: -0.01em; }
+h1 em { font-style: italic; color: var(--accent); }
+.lede { margin: 0 0 14px; color: var(--ink-soft); }
+form { display: flex; gap: 6px; }
+input#query {
+  flex: 1; min-width: 0; padding: 9px 11px; font: inherit; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--bg-raised); color: inherit;
+}
+input#query:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+form button { padding: 9px 14px; border: 0; border-radius: var(--radius); background: var(--ink-strong); color: var(--bg); font-weight: 600; }
+#places { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+#places button {
+  padding: 3px 10px; border: 1px solid var(--line); border-radius: 99px; background: var(--bg-raised); color: var(--ink-soft);
+}
+#places button.on { border-color: var(--ink-strong); color: var(--ink-strong); font-weight: 600; }
+#progress { margin: 10px 0 0; padding: 8px 10px; border-radius: var(--radius); background: var(--accent-soft); color: var(--accent); font-size: 13px; }
+#progress.error { background: var(--bad-soft); color: var(--bad); }
+
+#summary { padding: 0 20px 10px; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tile { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; }
+.tile b { display: block; font: 600 20px/1.1 ui-serif, Georgia, serif; font-variant-numeric: tabular-nums; }
+.tile span { color: var(--ink-soft); font-size: 12px; }
+.found { margin: 10px 0 0; color: var(--ink-soft); font-size: 13px; }
+.found b { color: var(--ink-strong); }
+
+nav { display: flex; gap: 2px; padding: 0 20px; border-bottom: 1px solid var(--line); }
+nav button { padding: 8px 9px; border: 0; background: none; color: var(--ink-soft); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+nav button.on { color: var(--ink-strong); border-color: var(--accent); font-weight: 600; }
+#panel { flex: 1; overflow-y: auto; padding: 4px 0 30px; }
+
+.row { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 9px 20px; border-bottom: 1px solid var(--line-soft); cursor: pointer; }
+.row:hover { background: var(--line-soft); }
+.row.on { background: var(--accent-soft); box-shadow: inset 3px 0 var(--accent); }
+.row.static { cursor: default; }
+.row .name { font-weight: 600; overflow-wrap: anywhere; }
+.row .n { font: 600 15px ui-serif, Georgia, serif; font-variant-numeric: tabular-nums; text-align: right; }
+.row .sub { grid-column: 1 / -1; color: var(--ink-soft); font-size: 12.5px; overflow-wrap: anywhere; }
+.row .sub a { color: inherit; }
+.tag { display: inline-block; padding: 0 6px; border-radius: 4px; background: var(--line-soft); color: var(--ink-soft); font-size: 11.5px; margin-right: 4px; }
+.tag.katalog { background: var(--ink-strong); color: var(--bg); }
+.tag.bad { background: var(--bad-soft); color: var(--bad); }
+.bar { grid-column: 1 / -1; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+.hint { padding: 12px 20px; color: var(--ink-soft); font-size: 13px; }
+
+main { position: relative; }
+#map { position: absolute; inset: 0; background: var(--bg); }
+#legend {
+  position: absolute; left: 12px; bottom: 26px;
+  background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid var(--line); color: var(--ink-strong);
+  border-radius: 8px; padding: 9px 12px; display: grid; gap: 3px; font-size: 13px;
+}
+#legend label { display: flex; align-items: center; gap: 6px; }
+#filter { margin: 4px 0 0; padding-top: 6px; border-top: 1px solid var(--line); max-width: 300px; }
+#filter a { color: var(--accent); cursor: pointer; }
+
+/* Die Zonen sind von innen nach außen leiser — die Legende sagt, in welcher
+ * Reihenfolge. */
+.zones { display: inline-flex; gap: 2px; margin-left: 2px; }
+.zones i { width: 9px; height: 9px; border-radius: 2px; }
+.zones .z1 { background: color-mix(in srgb, var(--zone1) 55%, transparent); }
+.zones .z2 { background: color-mix(in srgb, var(--zone2) 38%, transparent); }
+.zones .z3 { background: color-mix(in srgb, var(--zone3) 26%, transparent); }
+.dash { width: 18px; height: 0; border-top: 2px dashed var(--ink-strong); opacity: .8; margin-left: 2px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 4px; }
+.dot.ev { background: var(--accent); }
+.dot.feed { background: var(--zone1); }
+.dot.html { background: var(--accent); }
+.dot.none { background: var(--ink-soft); opacity: .5; }
+
+.maplibregl-popup-content {
+  font: 13px/1.4 ui-sans-serif, system-ui, sans-serif; padding: 10px 12px; max-width: 300px;
+  background: var(--bg-raised); color: var(--ink-strong); border-radius: var(--radius);
+}
+.maplibregl-popup-content h3 { margin: 0 0 3px; font-size: 14px; }
+.maplibregl-popup-content p { margin: 0; color: var(--ink-soft); }
+.maplibregl-popup-content ul { margin: 6px 0 0; padding-left: 16px; max-height: 220px; overflow-y: auto; }
+.maplibregl-popup-content .quelle { color: var(--ink-soft); }
+.maplibregl-popup-tip { border-top-color: var(--bg-raised) !important; border-bottom-color: var(--bg-raised) !important; }
+.maplibregl-popup-close-button { color: var(--ink-soft); }
+
+@media (max-width: 800px) {
+  body { grid-template-columns: 1fr; grid-template-rows: auto 60vh; }
+  aside { height: auto; border-right: 0; }
+  #panel { max-height: 50vh; }
+}
