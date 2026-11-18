@@ -73,11 +73,42 @@ Dauerbetrieb oder für viele Städte laufen lässt, stellt eigene Instanzen hin
 öffentlich ist (auch nicht nach einer Weiterleitung), und liest höchstens `MAX_BYTES`. Eine
 Termin-URL wird nur gespeichert, wenn sie http(s) ist (`store.web_url`). Beides nicht umgehen.
 
+**Regeln und Urteile wirken bei der Abfrage, nie beim Einlesen.** `queries.fetch_events` ist
+die eine Stelle: Regel-Score, darüber das Urteil, darüber das Lesezeichen. Wer eine Regel beim
+Einlesen anwendet, macht sie unumkehrbar — man soll sehen können, was sie wegnimmt, und sie
+zurücknehmen können. `rule_bucket` zeigt weiter, was die Regeln ohne Urteil gesagt hätten.
+
+**Was ein Mensch angelegt hat, hängt nie an einer Nummer.** `event.id` ist ein Zähler der
+einen Datei und überlebt keine neue Erhebung. Lesezeichen und Einzelurteile hängen am
+`event_key` (Quelle, deren ID, Beginn), Serienurteile am `series_key` (Titel plus Haus), und
+beide tragen eine Kopie von Titel und Beginn. Nach außen bleibt die Nummer die Adresse
+(`/api/places/<slug>/events/<id>/…`), gespeichert wird sie nicht. Wer `store.series_key`
+anders bildet, lässt alle bisherigen Urteile still ins Leere zeigen.
+
+**Persönliches liegt in der zweiten Datei.** `data/personal.sqlite`, von `store.connect` als
+`personal` angehängt (`personal.py`): Regeln, Urteile, Lesezeichen, Profil. Die Tabellen
+werden ohne Präfix gefunden — aber nur, solange es in `store.SCHEMA` keine gleichnamige gibt.
+Zwischen den Dateien gibt es keine Fremdschlüssel. Es gibt eine Person und keine Konten; wer
+Mehrbenutzerbetrieb will, braucht mehr als eine Spalte.
+
+**Eine neue Spalte an `event` braucht den Eintrag in `store.ADDED`.** `CREATE TABLE IF NOT
+EXISTS` ändert keine Datei, die es schon gibt. `_migrate` zieht die Spalte beim Öffnen nach und
+leitet mit `reclassify` ab, was sich aus dem Bestand ableiten lässt.
+
+**18+ ist, was sich selbst so ausweist — und im Zweifel nicht.** `categories.is_adult`: ein
+Wort in Titel oder Quellkategorie reicht, in der Beschreibung braucht es zwei verschiedene. Was
+fälschlich als 18+ gilt, verschwindet aus der Karte, ohne dass es jemand merkt — der Schalter
+steht auf aus. Nach einer Änderung an `categories.py`: `urbanify reclassify <slug>`, kein
+neuer Abruf.
+
+**Ein Test der Datenschicht beweist keinen Endpunkt.** Wer an einem Endpunkt etwas ändert,
+braucht einen Test, der ihn aufruft (`tests/test_personal.py`, zweite Hälfte).
+
 **Die Dublettenerkennung ist eine Näherung.** Gleicher Tag, gleicher Titelanfang, gleiche
 Kilometerzelle. Sie findet eher zu wenig. Wer aus „nur hier" eine Aussage über eine Quelle
 ableitet, liest erst `store.dedup_key`.
 
-**Das ist kein Dienst.** Lokales Werkzeug ohne Anmeldung. Für die über OSM gefundenen Websites
+**Das ist kein Dienst.** Lokales Werkzeug ohne Anmeldung, für eine Person. Für die über OSM gefundenen Websites
 ist die Lizenzlage ungeklärt — die Erhebung zeigt, *dass* dort Termine maschinenlesbar stehen,
 nicht, dass man sie weiterverbreiten darf.
 
@@ -93,6 +124,7 @@ Stadt landet fast alles in `sonstiges`.
 uv run pytest tests -q                       # ohne Netz
 uv run urbanify probe <slug> --max-sites 50  # die Erkennung an echten Websites, begrenzt
 uv run urbanify report <slug>                # der Befund
+uv run urbanify marks <slug>                 # Vorgemerktes, und was davon ins Leere zeigt
 ```
 
 Die Karte prüft man im Browser. Ein eingebetteter Browser-Pane rendert WebGL nur, wenn er

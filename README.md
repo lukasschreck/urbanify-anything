@@ -39,8 +39,11 @@ fragen lassen, und wie viele ihr Programm nur für Menschen aufschreiben.
 Der Ort ist eine Eingabe. Keine Stadt steht in einer Signatur, einer Bedingung oder einem
 Vorgabewert; was nur für eine Region gilt, steht im Katalog (siehe unten).
 
-**Was es nicht tut:** Vormerken, eigene Vorlieben, Konten. Das hier ist die Erhebung und die
-Karte dazu, kein persönlicher Kalender.
+Und dann lebt man damit: Termine vormerken, Veranstaltungen beurteilen, mit Regeln schärfen,
+was oben liegt — siehe [Die Karte zum Leben](#die-karte-zum-leben).
+
+**Was es nicht tut:** Konten, Teilen mit anderen, ein gehosteter Dienst. Ein Werkzeug für eine
+Person an ihrem Rechner.
 
 ## Ein Beispiel
 
@@ -163,6 +166,33 @@ Die Dublettenerkennung ist eine Näherung: gleicher Tag, gleicher Titelanfang, g
 Kilometerzelle. Sie findet eher zu wenig. Wer aus „nur hier" eine Aussage über eine Quelle
 ableiten will, liest vorher `store.dedup_key`.
 
+## Die Karte zum Leben
+
+Die Erhebung beantwortet, was es gibt. Der zweite Reiter der Oberfläche, **Karte**, ist für die
+Frage danach: wo will ich hin?
+
+- **Wie, wann, was.** Auto oder E-Bike (die Zonen wechseln mit), Heute bis Alles, Kategorien,
+  nur Kinderprogramm — mit Alter, wo die Quelle eines nennt. 18+ bleibt aus, bis man es
+  einschaltet.
+- **Vormerken.** Ein Stern am Termin: „da will ich hin". Vorgemerktes steht oben in der Leiste,
+  trägt auf der Karte einen Ring und bleibt sichtbar, was auch immer die Regeln sagen.
+- **Urteilen.** Sehr interessant, prinzipiell, uninteressant — einmal für die Veranstaltung,
+  nicht für jeden ihrer Termine. Unter „Kuratieren …" geht das der Reihe nach, mit den Tasten
+  1, 2, 3.
+- **Schärfen.** Regeln heben hervor oder blenden aus („Titel enthält Hauptversammlung"), mit
+  Vorschau, was eine Regel am gewählten Ort verschiebt. Aus den Urteilen entstehen Vorschläge
+  für Regeln. Startregeln können aus einer eigenen `rules.yaml` kommen
+  (Vorlage: `rules.example.yaml`).
+- **Interessen** ordnen die Listen — und ändern sonst nichts.
+
+Nichts davon löscht einen Termin. Eine Regel verwirft nie etwas, ein Urteil lässt sich
+zurücknehmen, und „Auch Ausgeblendetes" zeigt jederzeit den ganzen Bestand.
+
+Was man selbst angelegt hat, liegt getrennt von der Erhebung in `data/personal.sqlite` und
+überlebt, dass ein Ort neu erhoben wird. Regeln und Interessen gelten für jeden Ort. Es gibt
+eine Person und keine Konten: wer das Werkzeug startet, dem gehört die Datei. Sichern heißt,
+diese eine Datei kopieren.
+
 ## Einstellungen
 
 | Variable | Vorgabe | |
@@ -175,7 +205,8 @@ ableiten will, liest vorher `store.dedup_key`.
 | `URBANIFY_DAYS` | `60` | Fenster |
 | `URBANIFY_DELAY` | `1.0` | Sekunden je Host |
 | `URBANIFY_CONCURRENCY` | `24` | Hosts gleichzeitig |
-| `URBANIFY_DATA` | `./data` | |
+| `URBANIFY_DATA` | `./data` | Erhebungen je Ort, und `personal.sqlite` |
+| `URBANIFY_RULES` | `./rules.yaml` | eigene Startregeln, wenn sie woanders liegen |
 | `URBANIFY_ALLOW_PRIVATE` | aus | `1` erlaubt Abrufe in nicht öffentliche Netze — nur für einen Katalog-Endpunkt im eigenen Netz |
 
 Vorlage: `.env.example`. Eine `.env` im Wurzelverzeichnis des Repos wird beim Start gelesen; was
@@ -243,7 +274,8 @@ Die Zonen rechnet Valhalla, die Kartenkacheln liefert OpenFreeMap.
   Arbeitsliste.
 - **Feeds, die sich nur in einer Sitzungskennung unterscheiden,** zählen als mehrere Quellen
   (Beispiel im Showcase). Die Dublettenerkennung fängt die Termine ab, die Quellenzahl nicht.
-- **Vormerken und eigene Vorlieben.** Gibt es hier nicht.
+- **Mehrere Personen.** Vormerken, Urteile und Regeln gibt es für genau eine Person; Konten
+  und Teilen gehören nicht zu diesem Werkzeug.
 
 ## Mitmachen
 

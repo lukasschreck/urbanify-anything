@@ -1,0 +1,29 @@
+# Startregeln für die eigene Karte — eine Vorlage.
+#
+#   cp rules.example.yaml rules.yaml
+#
+# `rules.yaml` ist nicht versioniert: was einen interessiert, ist Sache der
+# Person, nicht des Werkzeugs. Die Datei wird beim Start des Servers (und mit
+# `urbanify rules`) in die eigenen Regeln gespiegelt; was in der Oberfläche
+# angelegt wurde, bleibt dabei erhalten.
+#
+#   score = Σ weight(white-Treffer) − Σ weight(black-Treffer)
+#     > 0  Highlight
+#     = 0  im Bestand
+#     < 0  ausgeblendet, aber vorhanden — eine Regel verwirft nie etwas
+#
+# field:   title | description | category | venue | city | source
+# matcher: contains | equals | regex      (Vergleich ohne Groß/Klein und Akzente)
+#
+# Regeln gelten für jeden Ort, den man erhebt. Ein Ortsname gehört deshalb in
+# ein Muster, wenn man ihn meint — nie in den Code.
+
+white:
+  - { field: category, matcher: equals,   pattern: theater,   weight: 3 }
+  - { field: category, matcher: equals,   pattern: literatur, weight: 2 }
+  - { field: title,    matcher: contains, pattern: Werkstatt, weight: 2 }
+
+black:
+  - { field: title,    matcher: contains, pattern: Hauptversammlung, weight: 5 }
+  - { field: title,    matcher: contains, pattern: Blutspende,       weight: 5 }
+  - { field: title,    matcher: contains, pattern: Sprechstunde,     weight: 4 }

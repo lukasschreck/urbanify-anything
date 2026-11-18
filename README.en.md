@@ -32,8 +32,11 @@ their programme down for humans only.
 The place is an input. No city appears in a signature, a condition or a default value; anything
 that only applies to one region lives in the catalog (see below).
 
-**What it does not do:** bookmarks, personal preferences, accounts. This is the survey and the
-map that goes with it, not a personal calendar.
+And then you live with it: bookmark events, judge them, and sharpen with rules what comes out
+on top — see [The map to live with](#the-map-to-live-with).
+
+**What it does not do:** accounts, sharing with others, a hosted service. A tool for one person
+on their own machine.
 
 ## An example
 
@@ -156,6 +159,30 @@ Duplicate detection is an approximation: same day, same start of the title, same
 cell. It tends to find too few. If you want to derive a statement about a source from "only
 here", read `store.dedup_key` first.
 
+## The map to live with
+
+The survey answers what exists. The second tab of the interface, **Karte** (map), is for the
+question after that: where do I want to go?
+
+- **How, when, what.** Car or e-bike (the zones follow), today to everything, categories,
+  children's programme only — with an age where the source states one. 18+ stays off until you
+  switch it on.
+- **Bookmarks.** A star on an event: "I want to go there". Bookmarked events are listed at the
+  top, carry a ring on the map and stay visible whatever the rules say.
+- **Verdicts.** Very interesting, in principle, not interesting — once per event series, not
+  per date. "Kuratieren …" walks through them one by one, with the keys 1, 2, 3.
+- **Rules.** Rules highlight or hide ("title contains Hauptversammlung"), with a preview of what
+  a rule moves in the selected place. Verdicts turn into rule suggestions. Starting rules can
+  come from your own `rules.yaml` (template: `rules.example.yaml`).
+- **Interests** order the lists — and change nothing else.
+
+None of this deletes an event. A rule never discards anything, a verdict can be taken back, and
+"Auch Ausgeblendetes" (also hidden) always shows the full stock.
+
+What you add yourself is kept apart from the survey in `data/personal.sqlite` and survives a
+place being surveyed again. Rules and interests apply to every place. There is one person and
+no accounts: whoever starts the tool owns the file. Backing up means copying that one file.
+
 ## Settings
 
 | Variable | Default | |
@@ -168,7 +195,8 @@ here", read `store.dedup_key` first.
 | `URBANIFY_DAYS` | `60` | window |
 | `URBANIFY_DELAY` | `1.0` | seconds per host |
 | `URBANIFY_CONCURRENCY` | `24` | hosts in parallel |
-| `URBANIFY_DATA` | `./data` | |
+| `URBANIFY_DATA` | `./data` | surveys per place, and `personal.sqlite` |
+| `URBANIFY_RULES` | `./rules.yaml` | your own starting rules, if they live elsewhere |
 | `URBANIFY_ALLOW_PRIVATE` | off | `1` allows requests into non-public networks — only for a catalog endpoint in your own network |
 
 Template: `.env.example`. A `.env` in the repository root is read at start-up; anything already
@@ -236,7 +264,8 @@ are computed by Valhalla, map tiles are served by OpenFreeMap.
   list.
 - **Feeds that differ only in a session parameter** count as several sources (example in the
   showcase). Duplicate detection catches the events, but not the source count.
-- **Bookmarks and personal preferences.** Not part of this tool.
+- **Several people.** Bookmarks, verdicts and rules exist for exactly one person; accounts and
+  sharing are not part of this tool.
 
 ## Contributing
 

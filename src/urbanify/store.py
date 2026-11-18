@@ -2,10 +2,14 @@
 
 Everything in it is derived and can be rebuilt by `urbanify survey`. Places do
 not share a file, so removing a city is removing a directory.
+
+What a person adds — bookmarks, verdicts, rules — is not derived and lives in
+a second file, see `personal.py`. `connect` attaches it.
 """
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import re
 import sqlite3
@@ -13,7 +17,7 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import config
+from . import config, personal
 from .categories import describe
 from .place import Place
 
@@ -55,6 +59,18 @@ CREATE INDEX IF NOT EXISTS event_dedup ON event (dedup_key);
 CREATE INDEX IF NOT EXISTS event_source ON event (source);
 """
 
+# Später dazugekommene Spalten. Eine Datei von früher bekommt sie beim Öffnen,
+# und was sich aus dem Bestand ableiten lässt, wird dabei nachgezogen.
+#   event_key   Quelle, deren ID, Beginn — daran hängt ein Lesezeichen
+#   series_key  Titel und Haus — daran hängt ein Urteil über alle Termine
+ADDED = (("is_adult", "INTEGER DEFAULT 0"), ("age_min", "INTEGER"), ("age_max", "INTEGER"),
+         ("event_key", "TEXT"), ("series_key", "TEXT"))
+INDEXES = """
+CREATE INDEX IF NOT EXISTS event_by_key ON event (event_key);
+CREATE INDEX IF NOT EXISTS event_series ON event (series_key);
+CREATE INDEX IF NOT EXISTS event_starts ON event (starts_at);
+"""
+
 # Wo eine Koordinate herkommt. `ort` heißt: die Quelle ist die Website eines
 # Hauses, der Termin nennt keinen eigenen Ort, also steht er am Haus.
 GEO = ("quelle", "ort", "geocoder", "fehlt", "offen")
@@ -77,7 +93,38 @@ def connect(slug: str, create: bool = False) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.executescript(SCHEMA)
+    _migrate(conn)
+    personal.attach(conn)
     return conn
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    have = {r["name"] for r in conn.execute("PRAGMA table_info(event)")}
+    missing = [(n, t) for n, t in ADDED if n not in have]
+    for name, kind in missing:
+        conn.execute(f"ALTER TABLE event ADD COLUMN {name} {kind}")
+    conn.executescript(INDEXES)
+    if missing:
+        reclassify(conn)
+
+
+def reclassify(conn: sqlite3.Connection) -> int:
+    """Kategorie, Kennzeichen und Schlüssel aus dem Bestand neu ableiten.
+
+    Nach einer Änderung an `categories.py` — und für Dateien, die älter sind
+    als die Spalten. Fragt keine fremde Website."""
+    rows = conn.execute("SELECT id, source, external_id, starts_at, title, venue, "
+                        "category_raw, description FROM event").fetchall()
+    for r in rows:
+        told = describe(r["category_raw"], r["title"], r["description"] or "")
+        conn.execute(
+            """UPDATE event SET category=?, is_kids=?, is_adult=?, age_min=?, age_max=?,
+                                event_key=?, series_key=? WHERE id=?""",
+            (told.category, int(told.is_kids), int(told.is_adult), told.age_min, told.age_max,
+             event_key(r["source"], r["external_id"], r["starts_at"]),
+             series_key(r["title"], r["venue"]), r["id"]))
+    conn.commit()
+    return len(rows)
 
 
 def places() -> list[str]:
@@ -149,6 +196,20 @@ def stable_id(*parts) -> str:
     return hashlib.sha1("|".join(str(p) for p in parts).encode()).hexdigest()[:20]
 
 
+def event_key(source: str, external_id: str, starts_at: str) -> str:
+    """Quelle, deren ID, Beginn. Wird ein Termin verlegt, ändert sich der
+    Schlüssel mit — es ist ein anderer Termin. Darum trägt ein Lesezeichen
+    eine Kopie von Titel und Beginn."""
+    return stable_id("event", source, external_id, starts_at)
+
+
+def series_key(title: str, venue: str | None) -> str:
+    """Was derselbe Weihnachtsmarkt an 24 Tagen gemeinsam hat: Titel und Haus,
+    nicht das Datum und nicht die Quelle. Wer den Schlüssel anders bildet,
+    lässt alle bisherigen Urteile still ins Leere zeigen."""
+    return f"{fold(title)}|{fold(venue) or '-'}"
+
+
 def web_url(value) -> str | None:
     """Eine Termin-URL kommt aus fremden Feeds. Was kein http(s) ist — etwa
     `javascript:` —, wird nicht gespeichert und damit nie zum Link."""
@@ -177,7 +238,8 @@ def upsert_event(conn: sqlite3.Connection, source: str, ev: dict) -> bool:
     Der Ingest filtert nie nach Ort: was außerhalb der Stunde liegt, bleibt
     drin und bekommt keine Zone. Erst der Bericht zählt getrennt.
     """
-    title = (ev.get("title") or "").strip()
+    # Manche Feeds liefern den Titel mit HTML-Entitäten („Mairie &amp; Poste").
+    title = html.unescape(ev.get("title") or "").strip()
     starts = ev.get("starts_at")
     if not title or not starts:
         return False
@@ -188,8 +250,9 @@ def upsert_event(conn: sqlite3.Connection, source: str, ev: dict) -> bool:
     conn.execute(
         """INSERT INTO event (source, external_id, title, starts_at, ends_at, all_day,
                               venue, street, postal_code, city, lat, lon, geo,
-                              category, category_raw, is_kids, url, description, dedup_key)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                              category, category_raw, is_kids, is_adult, age_min, age_max,
+                              url, description, dedup_key, event_key, series_key)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
            ON CONFLICT(source, external_id, starts_at) DO UPDATE SET
              title=excluded.title, ends_at=excluded.ends_at, all_day=excluded.all_day,
              venue=excluded.venue, street=excluded.street,
@@ -197,11 +260,15 @@ def upsert_event(conn: sqlite3.Connection, source: str, ev: dict) -> bool:
              lat=COALESCE(excluded.lat, event.lat), lon=COALESCE(excluded.lon, event.lon),
              geo=CASE WHEN excluded.lat IS NOT NULL THEN excluded.geo ELSE event.geo END,
              category=excluded.category, category_raw=excluded.category_raw,
-             is_kids=excluded.is_kids, url=excluded.url,
-             description=excluded.description, dedup_key=excluded.dedup_key""",
+             is_kids=excluded.is_kids, is_adult=excluded.is_adult,
+             age_min=excluded.age_min, age_max=excluded.age_max, url=excluded.url,
+             description=excluded.description, dedup_key=excluded.dedup_key,
+             event_key=excluded.event_key, series_key=excluded.series_key""",
         (source, ext, title[:300], starts, ev.get("ends_at"), int(bool(ev.get("all_day"))),
          ev.get("venue"), ev.get("street"), ev.get("postal_code"), ev.get("city"),
          lat, lon, geo, told.category, ev.get("category_raw"), int(told.is_kids),
+         int(told.is_adult), told.age_min, told.age_max,
          web_url(ev.get("url")), (ev.get("description") or "")[:2000] or None,
-         dedup_key(title, starts, lat, lon, ev.get("venue"))))
+         dedup_key(title, starts, lat, lon, ev.get("venue")),
+         event_key(source, ext, starts), series_key(title[:300], ev.get("venue"))))
     return True

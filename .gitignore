@@ -13,3 +13,6 @@ data/*
 # Der Katalog ist die eigene Quellenliste, nicht Teil des Werkzeugs.
 # Vorlage: src/urbanify/catalog.example.yaml
 src/urbanify/catalog.yaml
+
+# Die eigenen Startregeln. Vorlage: rules.example.yaml
+/rules.yaml

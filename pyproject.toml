@@ -1,6 +1,6 @@
 [project]
 name = "urbanify"
-version = "0.1.0"
+version = "0.2.0"
 description = "Eine beliebige Stadt, die Stunde drumherum, und welche Quellen dort Termine führen"
 readme = "README.md"
 license = "MIT"

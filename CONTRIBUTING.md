@@ -73,6 +73,11 @@ Bedingung.
   Adressen und die Größengrenze. Nur die Dienste mit eigener API (Nominatim, Overpass, Valhalla)
   werden direkt gefragt.
 - **Eine Quellenliste.** Siehe oben.
+- **Filtern beim Einlesen.** Regeln und Urteile wirken bei der Abfrage (`queries.fetch_events`),
+  damit jede Entscheidung umkehrbar bleibt. Gespeichert wird alles.
+- **Etwas Persönliches an `event.id`.** Lesezeichen und Urteile hängen an `event_key` und
+  `series_key`; die Nummer überlebt keine neue Erhebung.
+- **Konten, Teilen, ein gehosteter Betrieb.** Das Werkzeug ist für eine Person an ihrem Rechner.
 
 ## Stil
 
